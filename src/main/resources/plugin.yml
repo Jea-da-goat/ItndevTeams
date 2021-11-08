@@ -1,0 +1,23 @@
+name: itndevteams
+version: ${project.version}
+main: com.itndev.teams.main
+api-version: 1.16
+depend: [Vault]
+softdepend: [PlaceholderAPI]
+commands:
+  팀:
+    description: command
+  대전:
+    description: command
+  정보:
+    description: command
+  checkhashmaps:
+    description: command
+  checkclientname:
+    description: command
+  updateredis:
+    description: command
+  syncteams:
+    description: command to sync team data
+  teamadmin:
+    description: command for team admin commands
