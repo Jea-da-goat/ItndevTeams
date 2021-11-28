@@ -1,15 +1,45 @@
-name: itndevteams
+name: Itndevteams
 version: ${project.version}
 main: com.itndev.teams.main
 api-version: 1.16
-depend: [Vault]
-softdepend: [PlaceholderAPI]
+depend: [Vault, ProtocolLib]
+softdepend: [PlaceholderAPI, Essentials]
 commands:
   팀:
     description: command
   대전:
     description: command
+  spawn:
+    description: command
+  잠금:
+    description: command
+  스폰:
+    description: command
+  창고:
+    description: command
+  뮤트:
+    description: command
+  뮤트해제:
+    description: command
+  핫타임:
+    description: command
+  힐러:
+    description: command
   정보:
+    description: command
+  추첨시작:
+    description: command
+  기본템:
+    description: command
+  돈:
+    description: command
+  chattoggle:
+    description: command
+  test111:
+    description: command
+  faxcore:
+    description: command
+  candestroy:
     description: command
   checkhashmaps:
     description: command
@@ -21,3 +51,7 @@ commands:
     description: command to sync team data
   teamadmin:
     description: command for team admin commands
+  아레나:
+    description: command
+  exchange:
+    description: command

@@ -48,11 +48,11 @@ public class commands implements CommandExecutor {
                         create.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
                         if (storage.teamrank.get(p.getUniqueId().toString()).equals("nomad")) {
                             double money = main.econ.getBalance(Bukkit.getOfflinePlayer(p.getUniqueId()));
-                            if (money >= 5000) {
+                            if (money >= 50000) {
 
-                                if ((args[1].toString().length() >= 2 || p.hasPermission("itndevteams.donation.charlimit")) && args[1].toString().length() <= 10 && !args[1].contains(":=:") && !args[1].contains("&")) {
+                                if ((args[1].toString().length() >= 3 || p.hasPermission("itndevteams.donation.charlimit")) && args[1].toString().length() <= 10 && !args[1].contains(":=:") && !args[1].contains("&")) {
 
-                                    if (!bannedteamname.containsKey(args[1].toLowerCase(Locale.ROOT))) {
+                                    if (!bannedteamname.keySet().stream().anyMatch(key -> args[1].toLowerCase(Locale.ROOT).contains(key))) {
 
                                         if (!storage.teams.containsKey(args[1].toLowerCase(Locale.ROOT)) || p.hasPermission("itndevteams.bypass.bannedteamname")) {
                                             String uuidofleader = p.getUniqueId().toString();
@@ -77,9 +77,9 @@ public class commands implements CommandExecutor {
 
                                             //시발 여기다
 
-                                            main.econ.withdrawPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()), 5000);
+                                            main.econ.withdrawPlayer(Bukkit.getOfflinePlayer(p.getUniqueId()), 50000);
 
-                                            main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + args[1] + "을 5000원을 지불하고 생성했습니다");
+                                            main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + args[1] + "을 50000원을 지불하고 생성했습니다");
                                             //jedis.RedisChatSyncQ.put("notify:=:" + uuidofleader + ":=:" + uuidofleader + ":=:" + "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + args[1] + "을 300원을 지불하고 생성했습니다" + ":=:" + "true", "notify:=:" + uuidofleader + ":=:" + uuidofleader + ":=:" + "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + args[1] + "을 300원을 지불하고 생성했습니다" + ":=:" + "true");
 
 
@@ -87,13 +87,13 @@ public class commands implements CommandExecutor {
                                             main.sendmsg(p, lang.alreadyname);
                                         }
                                     } else {
-                                        main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 팀이름은 금지되어 있습니다");
+                                        main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 팀이름은 금지되어 있거나 부적절한 단어가 들어가 있습니다");
                                     }
                                 } else {
-                                    main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f팀 이름은 반드시 2~10자 사이어야 합니다. 후원하시면 2글자보다 짧은 이름을 지정하실수 있습니다");
+                                    main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f팀 이름은 반드시 3~10자 사이이며 &와 같은 특수문자가 들어가서는 안됩니다. 후원하시면 3글자보다 짧은 이름을 지정하실수 있습니다");
                                 }
                             } else {
-                                main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f돈이 부족합니다. 적어도 5000원보다는 많아야 팀을 생성하실수 있습니다");
+                                main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f돈이 부족합니다. 적어도 50000원보다는 많아야 팀을 생성하실수 있습니다");
                             }
                             //작업중
                         } else {
@@ -166,6 +166,30 @@ public class commands implements CommandExecutor {
                             main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f소속된 팀이 없습니다");
                         }
 
+                    } else if(args[0].equalsIgnoreCase("초대취소")) {
+                        if (all.containsKey(sender.getName())) {
+                            int cooldownTime = 2;
+                            long secondsLeft = ((Long) all.get(sender.getName())).longValue() / 1000L + cooldownTime - System.currentTimeMillis() / 1000L;
+                            if (secondsLeft > 0L) {
+                                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 명령어는 &c" + secondsLeft + "&r&f초 후에 다시 사용 가능합니다"));
+                                return true;
+                            }
+                        }
+                        all.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
+                        String name = args[1];
+                        if(listener.nameuuid.containsKey(name)) {
+                            String sendeduuid = listener.nameuuid.get(name);
+                            String teamname = storage.teampvp.get(p.getUniqueId().toString());
+                            if(inviteq.containsKey(sendeduuid) && inviteq.get(sendeduuid).contains(storage.teampvp.get(p.getUniqueId().toString()))) {
+                                jedis.RedisUpdateQ.put("update:=:inviteq:=:add:=:" + sendeduuid + ":=:remove:=:" + teamname, "update:=:inviteq:=:add:=:" + sendeduuid + ":=:remove:=:" + teamname);
+                                utils.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 유저 &c" + name + "&r&f 이에게 보낸 초대장을 취소했습니다");
+                                jedis.RedisChatSyncQ.put("notify:=:" + uuid + ":=:" + sendeduuid + ":=:" + storage.teams.get(teamname) + "에서 보낸 초대장이 취소되었습니다" + ":=:" + "false", "notify:=:" + uuid + ":=:" + sendeduuid + ":=:" + storage.teams.get(teamname) + "에서 보낸 초대장이 취소되었습니다" + ":=:" + "false");
+                            } else {
+                                utils.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 유저 &c" + name + "&r&f 이에게 초대장을 보낸적이 없습니다");
+                            }
+                        } else {
+                            utils.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f해당 유저 &c" + name + "&r&f (은)는 서버에 접속한적이 없습니다");
+                        }
                     } else if (args[0].equalsIgnoreCase("수락")) {
                         if (all.containsKey(sender.getName())) {
                             int cooldownTime = 2;
@@ -336,7 +360,7 @@ public class commands implements CommandExecutor {
                                     jedis.RedisUpdateQ.put("update:=:teamrank:=:add:=:" + uuid2 + ":=:add:=:" + "nomad", "update:=:teamrank:=:add:=:" + uuid2 + ":=:add:=:" + "nomad");
 
                                     //storage.teampvp.remove(uuid2);
-                                    jedis.RedisUpdateQ.put("update:=:teamrank:=:remove:=:" + uuid2 + ":=:add:=:" + "nomad", "update:=:teamrank:=:remove:=:" + uuid2 + ":=:add:=:" + "nomad");
+                                    jedis.RedisUpdateQ.put("update:=:teampvp:=:remove:=:" + uuid2 + ":=:add:=:" + "nomad", "update:=:teamrank:=:remove:=:" + uuid2 + ":=:add:=:" + "nomad");
 
 
                                     //ArrayList<String> list = storage.teammember.get(storage.teampvp.get(uuid2));
@@ -390,9 +414,10 @@ public class commands implements CommandExecutor {
 
                         if (storage.teams.containsKey(args[1].toLowerCase(Locale.ROOT))) {
                             for (String uuids : list) {
-                                memlist = memlist + listener.name2name(listener.uuid2name(uuids)) + ", ";
                                 if (storage.getrank2(uuids).equals("leader")) {
                                     leadermem = listener.name2name(listener.uuid2name(uuids));
+                                } else {
+                                    memlist = memlist + listener.name2name(listener.uuid2name(uuids)) + ", ";
                                 }
                             }
                             main.sendmsg(p, "&m&l----------&a&l[&f" + storage.teams.get(args[1].toLowerCase(Locale.ROOT)) + "&a&l]&f&m&l----------\n" +
@@ -403,6 +428,8 @@ public class commands implements CommandExecutor {
                                     "&f" + memlist + "\n" +
                                     " \n" +
                                     "&m&l----------&a&l[&f" + storage.teams.get(args[1].toLowerCase(Locale.ROOT)) + "&a&l]&f&m&l----------\n");
+                        } else {
+                            main.sendmsg(p, "&a&l&o[ &f팀 &a&l&o] &r&f해당 팀은 존재하지 않습니다");
                         }
 
                     } else if (args[0].equalsIgnoreCase("소속")) {
@@ -416,11 +443,17 @@ public class commands implements CommandExecutor {
                         }
                         all.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
                         String name = args[1].toLowerCase(Locale.ROOT);
+
                         if (listener.nameuuid.containsKey(name)) {
-                            main.sendmsg(p, "&a&l&o[ &f팀 &a&l&o] &r&f" + listener.name2name(name) + "의 소속팀 : " + storage.teams.get(storage.teampvp.get(listener.name2uuid(name))));
+                            if(storage.teams.get(storage.teampvp.get(listener.name2uuid(name))) != null) {
+                                main.sendmsg(p, "&a&l&o[ &f팀 &a&l&o] &r&f" + listener.name2name(name) + "의 소속팀 : " + storage.teams.get(storage.teampvp.get(listener.name2uuid(name))));
+                            } else {
+                                main.sendmsg(p, "&a&l&o[ &f팀 &a&l&o] &r&f" + listener.name2name(name) + "는 소속된 팀이 없습니다 &7(무소속)");
+                            }
                         } else {
                             main.sendmsg(p, "&a&l&o[ &f팀 &a&l&o] &r&f해당 유저는 서버에 접속한적이 없습니다");
                         }
+
                     } else if (args[0].equalsIgnoreCase("이름")) { // 응 아니야 안써
                         if (all.containsKey(sender.getName())) {
                             int cooldownTime = 2;
@@ -451,17 +484,20 @@ public class commands implements CommandExecutor {
                         all.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
                         if (storage.teampvp.containsKey(uuid)) {
                             if (!storage.teamrank.get(uuid).equals("leader")) {
+                                String oldteamname = storage.teampvp.get(uuid).toString();
+                                main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + storage.teams.get(oldteamname) + "에서 나갔습니다");
+                                jedis.RedisChatSyncQ.put("notify:=:" + oldteamname.toLowerCase() + ":=:" + "TeamChat" + ":=:" + p.getName() + "이가 당신의 팀을 떠났습니다" + ":=:" + "true", "notify:=:" + uuid + ":=:" + "SIBAL" + ":=:" + p.getName() + "이가 당신의 팀을 떠났습니다" + ":=:" + "true");
                                 //storage.teamrank.put(uuid, "nomad");
                                 jedis.RedisUpdateQ.put("update:=:teamrank:=:add:=:" + uuid + ":=:add:=:" + "nomad", "update:=:teamrank:=:add:=:" + uuid + ":=:add:=:" + "nomad");
 
-                                String oldteamname = storage.teampvp.get(uuid).toString();
+
 
                                 //storage.teampvp.remove(uuid);
                                 jedis.RedisUpdateQ.put("update:=:teampvp:=:remove:=:" + uuid + ":=:add:=:" + "nomad", "update:=:teampvp:=:remove:=:" + uuid + ":=:add:=:" + "nomad");
+                                jedis.RedisUpdateQ.put("update:=:teammember:=:add:=:" + oldteamname + ":=:remove:=:" + uuid, "update:=:teammember:=:add:=:" + oldteamname + ":=:remove:=:" + uuid);
 
 
-                                main.sendmsg(p, "&a&o&l[ &r&f팀 &a&o&l] &r&f성공적으로 팀 " + storage.teams.get(oldteamname) + "에서 나갔습니다");
-                                jedis.RedisChatSyncQ.put("notify:=:" + uuid + ":=:" + listener.name2uuid(args[1].toLowerCase(Locale.ROOT)) + ":=:" + listener.name2name(args[1].toLowerCase(Locale.ROOT)) + "이가 당신의 팀을 떠났습니다" + ":=:" + "true", "notify:=:" + uuid + ":=:" + listener.name2uuid(args[1].toLowerCase(Locale.ROOT)) + ":=:" + listener.name2name(args[1].toLowerCase(Locale.ROOT)) + "이가 당신의 팀을 떠났습니다" + ":=:" + "true");
+
 
 
                             } else {
@@ -571,50 +607,14 @@ public class commands implements CommandExecutor {
                         }
                         all.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
                         //여기다가 도움말명령어
-                        main.sendmsg(p, "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r\n" +
-                                "/팀 생성 &7(팀이름) &8: &f팀을 생성한다. 팀 생성비용 300원\n" +
-                                "/팀 초대 &7(이름) &8: &f해당 유저를 팀에 초대한다\n" +
-                                "/팀 수락 &7(팀이름) &8: &f해당 팀이 보낸 초대장을 수락한다\n" +
-                                "/팀 추방 &7(이름) &8: &f해당 유저를 팀에서 추방한다\n" +
-                                "/팀 나가기 &8: &f팀에서 나간다\n" +
-                                "/팀 부리더지정 &7(이름) &8: &f해당 유저를 부리더로 승급시킨다\n" +
-                                "/팀 부리더해제 &7(이름) &8: &f해당 유저를 부리더에서 해임한다\n" +
-                                "/팀 정보 &7(팀이름) &8: &f해당 팀의 정보를 보여준다\n" +
-                                "/팀 채팅 &8: &f팀 채팅을 키거나 끈다\n" +
-                                "/팀 해체 &8: &f팀을 해체한다.\n" +
-                                "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r" +
-                                "");
-
+                        sendteamhelpmsg(p);
                     } else {
-                        main.sendmsg(p, "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r\n" +
-                                "/팀 생성 &7(팀이름) &8: &f팀을 생성한다. 팀 생성비용 300원\n" +
-                                "/팀 초대 &7(이름) &8: &f해당 유저를 팀에 초대한다\n" +
-                                "/팀 수락 &7(팀이름) &8: &f해당 팀이 보낸 초대장을 수락한다\n" +
-                                "/팀 추방 &7(이름) &8: &f해당 유저를 팀에서 추방한다\n" +
-                                "/팀 나가기 &8: &f팀에서 나간다\n" +
-                                "/팀 부리더지정 &7(이름) &8: &f해당 유저를 부리더로 승급시킨다\n" +
-                                "/팀 부리더해제 &7(이름) &8: &f해당 유저를 부리더에서 해임한다\n" +
-                                "/팀 정보 &7(팀이름) &8: &f해당 팀의 정보를 보여준다\n" +
-                                "/팀 채팅 &8: &f팀 채팅을 키거나 끈다\n" +
-                                "/팀 해체 &8: &f팀을 해체한다.\n" +
-                                "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r" +
-                                "");
+                        sendteamhelpmsg(p);
                     }
 
                 } else {
-                    main.sendmsg(p, "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r\n" +
-                            "/팀 생성 &7(팀이름) &8: &f팀을 생성한다. 팀 생성비용 300원\n" +
-                            "/팀 초대 &7(이름) &8: &f해당 유저를 팀에 초대한다\n" +
-                            "/팀 수락 &7(팀이름) &8: &f해당 팀이 보낸 초대장을 수락한다\n" +
-                            "/팀 추방 &7(이름) &8: &f해당 유저를 팀에서 추방한다\n" +
-                            "/팀 나가기 &8: &f팀에서 나간다\n" +
-                            "/팀 부리더지정 &7(이름) &8: &f해당 유저를 부리더로 승급시킨다\n" +
-                            "/팀 부리더해제 &7(이름) &8: &f해당 유저를 부리더에서 해임한다\n" +
-                            "/팀 정보 &7(팀이름) &8: &f해당 팀의 정보를 보여준다\n" +
-                            "/팀 채팅 &8: &f팀 채팅을 키거나 끈다\n" +
-                            "/팀 해체 &8: &f팀을 해체한다.\n" +
-                            "&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r" +
-                            "");
+                    sendteamhelpmsg(p);
+
                 }
             } else {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&a&o&l[ &r&f팀 &a&o&l] &r&f점검상의 이유로 팀 관련 명령어가 일시 비활성화 됬습니다. 5분만 기다려 주십시오"));
@@ -653,6 +653,24 @@ public class commands implements CommandExecutor {
                 }
             }
         }
+
+    }
+    public void sendteamhelpmsg(Player p) {
+        main.sendmsg(p, "&r&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r\n" +
+                "&r/팀 생성 &7(팀이름) &8: &f팀을 생성한다 &7(팀 생성비용 50000원)\n" +
+                "&r/팀 초대 &7(이름) &8: &f해당 유저를 팀에 초대한다 &7(2분후 만료)\n" +
+                "&r/팀 초대취소 &7(이름) &8: &f해당 유저에게 보낸 초대장을 취소한다\n" +
+                "&r/팀 수락 &7(팀이름) &8: &f해당 팀이 보낸 초대장을 수락한다\n" +
+                "&r/팀 추방 &7(이름) &8: &f해당 유저를 팀에서 추방한다\n" +
+                "&r/팀 나가기 &8: &f팀에서 나간다\n" +
+                "&r/팀 부리더지정 &7(이름) &8: &f해당 유저를 부리더로 승급시킨다\n" +
+                "&r/팀 부리더해제 &7(이름) &8: &f해당 유저를 부리더에서 해임한다\n" +
+                "&r/팀 정보 &7(팀이름) &8: &f해당 팀의 정보를 보여준다\n" +
+                "&r/팀 소속 &7(이름) &8: &f해당 유저의 팀 소속을 보여준다\n" +
+                "&r/팀 채팅 &8: &f팀 채팅을 키거나 끈다\n" +
+                "&r/팀 해체 &8: &f팀을 해체한다.\n" +
+                "&r&f&m----------&a&l[&f팀 도움말&a&l]&f&m----------&r" +
+                "");
 
     }
 }

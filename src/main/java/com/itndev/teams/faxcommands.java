@@ -25,9 +25,14 @@ public class faxcommands {
                         item.setItemMeta(tempmeta);
                     }
                 }
-
             }
-        }
+        } else if(args[0].equalsIgnoreCase("checkissame")) {
 
+            ItemStack item1 = p.getInventory().getItemInMainHand();
+            ItemStack item2 = p.getInventory().getItemInOffHand();
+            if(item1.isSimilar(item2));
+            utils.sendmsg(p, "&c&lCHECK &7같은 아이템인지 여부 : &f" + String.valueOf(item1.isSimilar(item2)));
+
+        }
     }
 }

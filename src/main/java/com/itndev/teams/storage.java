@@ -9,24 +9,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class storage {
-    public static HashMap<String, String> teampvp = new HashMap<>();
+    public static ConcurrentHashMap<String, String> teampvp = new ConcurrentHashMap<>();
 
-    public static HashMap<String, String> teams = new HashMap<>();
+    public static ConcurrentHashMap<String, String> teams = new ConcurrentHashMap<>();
 
-    public static HashMap<String, String> teamrank = new HashMap<>();
+    public static ConcurrentHashMap<String, String> teamrank = new ConcurrentHashMap<>();
 
-    public static HashMap<String, ArrayList<String>> teammember = new HashMap<>();
+    public static ConcurrentHashMap<String, ArrayList<String>> teammember = new ConcurrentHashMap<>();
 
-    public static HashMap<String, String> disbandq = new HashMap<>();
+    public static HashMap<String, String> disbandq = new HashMap<>(); //flushable
 
-    public static File file;
+    public static HashMap<String, String> proxyonline = new HashMap<>();
+
+    public static File file = new File(main.getInstance().getDataFolder(), "LocalStorage.yml");
 
     public static FileConfiguration customlocalstorage;
 
     public static void createlocalstorage() {
-        file = new File(main.getInstance().getDataFolder(), "LocalStorage.yml");
+        //file = new File(main.getInstance().getDataFolder(), "LocalStorage.yml");
         if(!file.exists()) {
             try {
                 file.createNewFile();
@@ -37,6 +40,17 @@ public class storage {
 
         }
         customlocalstorage = YamlConfiguration.loadConfiguration(file);
+    }
+    public static void resetlocalstorage() throws IOException {
+        //file = new File(main.getInstance().getDataFolder(), "LocalStorage.yml");
+        file.delete();
+        file.createNewFile();
+        customlocalstorage.getKeys(false).forEach(key ->{
+            customlocalstorage.set(key, null);
+        });
+        saveStorage();
+
+
     }
 
 
@@ -61,52 +75,49 @@ public class storage {
 
 
 
-
-
-
     public static void onSaveteamrankData() {
         for (Map.Entry<String, String> entry : storage.teamrank.entrySet())
-            customlocalstorage.set("teamrank." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
+            storage.getStorage().set("teamrank." + (String)entry.getKey(), entry.getValue());
+        //saveStorage();
     }
     public static void onRestoreteamrankData() {
-        customlocalstorage.getConfigurationSection("teamrank.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("teamrank." + key).toString();
+        storage.getStorage().getConfigurationSection("teamrank.").getKeys(false).forEach(key -> {
+            String v = storage.getStorage().get("teamrank." + key).toString();
             storage.teamrank.put(key, v);
         });
     }
 
     public static void onSaveteampvpData() {
         for (Map.Entry<String, String> entry : storage.teampvp.entrySet())
-            customlocalstorage.set("teampvp." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
+            storage.getStorage().set("teampvp." + (String)entry.getKey(), entry.getValue());
+        //saveStorage();
     }
     public static void onRestoreteampvpData() {
-        customlocalstorage.getConfigurationSection("teampvp.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("teampvp." + key).toString();
+        storage.getStorage().getConfigurationSection("teampvp.").getKeys(false).forEach(key -> {
+            String v = storage.getStorage().get("teampvp." + key).toString();
             storage.teampvp.put(key, v);
         });
     }
     public static void onSaveteamsData() {
         for (Map.Entry<String, String> entry : storage.teams.entrySet())
-            customlocalstorage.set("teams." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
+            storage.getStorage().set("teams." + (String)entry.getKey(), entry.getValue());
+        //saveStorage();
     }
     public static void onRestoreteamsData() {
-        customlocalstorage.getConfigurationSection("teams.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("teams." + key).toString();
+        storage.getStorage().getConfigurationSection("teams.").getKeys(false).forEach(key -> {
+            String v = storage.getStorage().get("teams." + key).toString();
             storage.teams.put(key, v);
         });
     }
 
     public static void onSaveteammemberData() {
         for (Map.Entry<String, ArrayList<String>> entry : storage.teammember.entrySet())
-            customlocalstorage.set("teammember." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
+            storage.getStorage().set("teammember." + (String)entry.getKey(), entry.getValue());
+        //saveStorage();
     }
     public static void onRestoreteammemberData() {
-        customlocalstorage.getConfigurationSection("teammember.").getKeys(false).forEach(key -> {
-            ArrayList<String> v = (ArrayList<String>)customlocalstorage.get("teammember." + key);
+        storage.getStorage().getConfigurationSection("teammember.").getKeys(false).forEach(key -> {
+            ArrayList<String> v = (ArrayList<String>)storage.getStorage().get("teammember." + key);
             storage.teammember.put(key, v);
         });
     }
@@ -121,40 +132,7 @@ public class storage {
 
 
 
-    //uuidname nameuuid
-    public static void onSaveuuidnameData() {
-        for (Map.Entry<String, String> entry : listener.uuidname.entrySet())
-            customlocalstorage.set("uuidname." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
-    }
-    public static void onRestoreuuidnameData() {
-        customlocalstorage.getConfigurationSection("uuidname.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("uuidname." + key).toString();
-            listener.uuidname.put(key, v);
-        });
-    }
-    public static void onSavenameuuidData() {
-        for (Map.Entry<String, String> entry : listener.nameuuid.entrySet())
-            customlocalstorage.set("nameuuid." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
-    }
-    public static void onRestorenameuuidData() {
-        customlocalstorage.getConfigurationSection("nameuuid.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("nameuuid." + key).toString();
-            listener.nameuuid.put(key, v);
-        });
-    }
-    public static void onSavenamenameData() {
-        for (Map.Entry<String, String> entry : listener.namename.entrySet())
-            customlocalstorage.set("namename." + (String)entry.getKey(), entry.getValue());
-        saveStorage();
-    }
-    public static void onRestorenamenameData() {
-        customlocalstorage.getConfigurationSection("namename.").getKeys(false).forEach(key -> {
-            String v = customlocalstorage.get("namename." + key).toString();
-            listener.namename.put(key, v);
-        });
-    }
+
 
 
 
