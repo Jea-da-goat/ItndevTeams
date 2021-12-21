@@ -4,6 +4,7 @@ import com.itndev.teams.effectlist;
 import com.itndev.teams.listener;
 import com.itndev.teams.main;
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -172,6 +173,7 @@ public class AlterniveLoreRegister {
                     p.removePotionEffect(potype);
                 }
                 p.addPotionEffects(smartregisterlist);
+                p.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(20.0D + finalHealthmax);
             }
         }.runTask(main.getInstance());
     }

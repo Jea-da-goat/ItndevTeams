@@ -406,13 +406,6 @@ public class effectlist {
                         if(cacu.getAmplifier() > finaltypes.get(cacu.getType())) {
                             finaltypes.put(cacu.getType(), cacu.getAmplifier());
                             finaleffects2apply.add(cacu);
-                            /*for(PotionEffect po : finaleffects2apply) {
-                                if(po.getType().equals(cacu.getType())) {
-                                    finaleffects2apply.remove(po);
-                                }
-
-                            }*/
-
                         }
                     } else {
                         finaleffects2apply.add(cacu);
@@ -423,9 +416,6 @@ public class effectlist {
                 ArrayList<PotionEffectType> smartremovelist = new ArrayList<>();
                 for(PotionEffect po : finaleffects2apply) {
                     if(p.hasPotionEffect(po.getType())) {
-                        /*if(p.getPotionEffect(po.getType()).getAmplifier() < po.getAmplifier()) {
-                            smartregisterlist.add(po);
-                        }*/
                         for(PotionEffect po2 : p.getActivePotionEffects()) {
                             if(po2.getType().equals(po.getType())) {
                                 if(po2.getDuration() > 36000) {
@@ -562,7 +552,7 @@ public class effectlist {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        effectlist.RemovePotionEffects(p);
+                        //effectlist.RemovePotionEffects(p);
                         /*p.sendMessage("12-1");
                         if(effectlist222.isEmpty()) {
                             p.sendMessage("Effeclist222 is empty");

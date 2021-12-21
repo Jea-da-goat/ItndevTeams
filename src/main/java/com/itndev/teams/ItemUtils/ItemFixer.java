@@ -16,13 +16,13 @@ public class ItemFixer {
     @Deprecated
     public static Boolean checkifbroken(ItemStack broken) {
         ItemStack item = broken;
-        if(item.getType() != Material.AIR && item.hasItemMeta()) {
+        if(item != null && item.getType() != Material.AIR && item.hasItemMeta()) {
             ItemMeta tempmeta = item.getItemMeta();
             tempmeta.setDisplayName(tempmeta.getDisplayName());
             tempmeta.setLore(tempmeta.getLore());
             item.setItemMeta(tempmeta);
         }
-        if(broken.isSimilar(item)) {
+        if(item != null && broken.isSimilar(item)) {
             return false;
         } else {
             return true;
