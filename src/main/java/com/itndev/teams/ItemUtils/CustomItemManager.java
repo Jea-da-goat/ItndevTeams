@@ -43,6 +43,47 @@ public class CustomItemManager {
 
     }
 
+    @Deprecated
+    public static void ItemManagerAdvanced(Player p, ItemStack item) {
+        //double radius = 0;
+        NamespacedKey namekey = new NamespacedKey(main.getInstance(), "CLICKTOUSEITEM");
+        NamespacedKey namekey2 = new NamespacedKey(main.getInstance(), "REMOVEAMOUNT");
+        String k = item.getItemMeta().getPersistentDataContainer().get(namekey, PersistentDataType.STRING);
+        int c = item.getItemMeta().getPersistentDataContainer().get(namekey2, PersistentDataType.INTEGER);
+        String[] temp = k.split("=");
+        String[] tempcooldown = temp[temp.length - 1].split("-");
+        int cooldown = Integer.valueOf(tempcooldown[1]);
+        if(!CustomItemManager.CheckCooldown(p, k, item.getItemMeta().getDisplayName(), cooldown)) {
+            return;
+        }
+        if(!k.contains("=")) {
+            return;
+        }
+        item.setAmount(item.getAmount() - c);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String iteminfo = k;
+                if(iteminfo.contains("=")) {
+                    String[] iteminfoparts = iteminfo.split("=");
+                    for(int num = 0; num < iteminfoparts.length; num++) {
+                        if(!iteminfoparts[num].contains("hide")) {
+                            String[] tempdata1 = iteminfoparts[num].split(":");
+                            String[] tempdata2 = tempdata1[1].split("-");
+                            PotionEffect po = new PotionEffect(PotionEffectType.getByName(tempdata2[0]), Integer.valueOf(tempdata2[1]) * 20, Integer.valueOf(tempdata2[2]));
+                            if(tempdata1[0].equalsIgnoreCase("type1")) {
+                                utils.giveTeamEffect(p, Double.valueOf(tempdata2[3]), po, true);
+                            } else if(tempdata1[0].equalsIgnoreCase("type2")) {
+                                utils.giveTeamEffect(p, Double.valueOf(tempdata2[3]), po, false);
+                            }
+                        }
+                    }
+                }
+                this.cancel();
+            }
+        }.runTaskAsynchronously(main.getInstance());
+    }
 
     @Deprecated
     public static void ItemManager(Player p, ItemStack item) {
@@ -89,6 +130,7 @@ public class CustomItemManager {
                         }
                     }
                 }
+                this.cancel();
             }
         }.runTaskAsynchronously(main.getInstance());
 

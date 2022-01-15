@@ -15,13 +15,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class commands implements CommandExecutor {
 
     public static HashMap<String, Long> create = new HashMap<>();
     public static HashMap<String, Long> all = new HashMap<>();
     public static HashMap<String, ArrayList<String>> inviteq = new HashMap<>();
-    public static HashMap<Player, String> teamchat = new HashMap<>();
+    public static ConcurrentHashMap<Player, String> teamchat = new ConcurrentHashMap<>();
     public static HashMap<String, String> bannedteamname = new HashMap<>();
 
     @Override

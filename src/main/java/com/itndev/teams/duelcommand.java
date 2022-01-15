@@ -20,12 +20,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class duelcommand implements CommandExecutor {
 
-    public static HashMap<Player, Player> duelq1 = new HashMap<>();
-    public static HashMap<Player, ArrayList<Player>> duelqtake1 = new HashMap<>();
-    public static HashMap<Player, Boolean> isduelinghm = new HashMap<>();
+    public static ConcurrentHashMap<Player, Player> duelq1 = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Player, ArrayList<Player>> duelqtake1 = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Player, Boolean> isduelinghm = new ConcurrentHashMap<>();
     public static HashMap<Player, Player> dueler = new HashMap<>(); //상대방
     public static HashMap<String, Boolean> Arenausage = new HashMap<>();
     public static HashMap<Player, String> nameofArena = new HashMap<>();
@@ -33,13 +34,24 @@ public class duelcommand implements CommandExecutor {
     public static HashMap<String, String> locations = new HashMap<>();
     public static HashMap<String, Boolean> cancelmovements = new HashMap<>();
 
-    public static HashMap<Player, Player> pendingdueltag = new HashMap<>();
+    public static ConcurrentHashMap<Player, Player> pendingdueltag = new ConcurrentHashMap<>();
 
     public static HashMap<String, Long> duelcooldown = new HashMap<>();
 
 
+    public static HashMap<Player, Integer> tournament = new HashMap<>();
 
+    public static Boolean onGoingTournament = false;
 
+    public static Boolean TournamentStarted = false;
+
+    public static void AddToTournament(Player p) {
+        tournament.put(p, 1);
+    }
+
+    public static void StartTournament(Player p1, Player p2) {
+
+    }
 
 
     public static File arena;
@@ -130,6 +142,10 @@ public class duelcommand implements CommandExecutor {
                             sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&c&l( &r&f대전 &c&l) &r&f해당 명령어는 &c" + secondsLeft + "&r&f초 후에 다시 사용 가능합니다"));
                             return true;
                         }
+                    }
+                    if(onGoingTournament) {
+                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&c&l( &r&f대전 &c&l) &r&f현재 토너먼트가 진행중입니다"));
+                        return true;
                     }
                     duelcooldown.put(sender.getName(), Long.valueOf(System.currentTimeMillis()));
                     Player duel = Bukkit.getPlayer(args[1]);
@@ -296,6 +312,36 @@ public class duelcommand implements CommandExecutor {
                 } else if(args[0].equalsIgnoreCase("셋업") && p.hasPermission("itndevteams.admin")) {
                     utils.sendmsg(p, "&c&lPENDING &7셋업중.....");
                     setupduels();
+                } else if(args[0].equalsIgnoreCase("참가")) {
+                    if(onGoingTournament) {
+                        if(!TournamentStarted) {
+                            if (tournament.containsKey(p)) {
+                                utils.sendmsg(p, "&c&lERROR &r&7이미 토너먼트에 참가했습니다");
+                                return true;
+                            }
+                            AddToTournament(p);
+                            utils.sendmsg(p, "&c&lSUCCESS &r&7토너먼트에 참가했습니다");
+                        } else {
+                            utils.sendmsg(p, "&c&lERROR &r&7토너먼트가 이미 시작하였습니다. 참가가 불가능합니다");
+                            return true;
+                        }
+                    } else {
+                        utils.sendmsg(p, "&c&lERROR &r&7현재는 진행중인 토너먼트가 없습니다");
+                    }
+                } else if(args[0].equalsIgnoreCase("퇴장")) {
+                    if(onGoingTournament) {
+                        if(tournament.containsKey(p)) {
+                            if(TournamentStarted) {
+                                utils.sendmsg(p, "&c&lSUCCESS &r&7토너먼트가 이미 시작하였습니다. 퇴장이 불가능합니다");
+                            } else {
+                                utils.sendmsg(p, "&c&lSUCCESS &r&7토너먼트에서 퇴장했습니다");
+                                tournament.remove(p);
+                            }
+
+                        }
+                    } else {
+                        utils.sendmsg(p, "&c&lERROR &r&7현재는 진행중인 토너먼트가 없습니다");
+                    }
                 }
             } else if(args.length < 1) {
                 Player p = (Player) sender;

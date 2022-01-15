@@ -226,7 +226,7 @@ public class teamcommands implements CommandExecutor {
                 return true;
             }
             Player p = (Player) Sender;
-            if(args.length >= 1 && args[0].equalsIgnoreCase("이벤트")) {
+            if(args.length >= 1 && args[0].equalsIgnoreCase("e")) {
                 utils.sendmsg(p, "&c&lSUCESS &7이벤트를 시작합니다");
                 utils.eventitem();
             }

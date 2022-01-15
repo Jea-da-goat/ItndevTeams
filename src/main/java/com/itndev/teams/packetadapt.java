@@ -43,6 +43,7 @@ public class packetadapt extends PacketAdapter {
         allowedcommands.put("스폰", true);
         allowedcommands.put("spawn", true);
         allowedcommands.put("test111", true);
+        allowedcommands.put("auto", true);
         //allowedcommands.put("잠금", true);
         allowedcommands.put("창고", true);
         allowedcommands.put("bp", true);
@@ -93,6 +94,12 @@ public class packetadapt extends PacketAdapter {
             return;
         }
         if(message.startsWith("/")) {
+            if(duelcommand.isduelinghm.containsKey(e.getPlayer()) && duelcommand.isduelinghm.get(e.getPlayer())) {
+                if(!(message.equalsIgnoreCase("/glf") || message.equalsIgnoreCase("/heal") || message.equalsIgnoreCase("/힐") || message.equalsIgnoreCase("/fix")
+                        || message.equalsIgnoreCase("/수리") || message.equalsIgnoreCase("/tnfl"))) {
+                    e.setCancelled(true);
+                }
+            }
             if(message.contains(":")) {
                 utils.sendmsg(p, "&c&l(!) &f해당 명령어는 사용이 불가능하거나 존재하지 않는 명령어입니다");
                 e.setCancelled(true);

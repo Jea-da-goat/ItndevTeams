@@ -3,7 +3,7 @@ version: ${project.version}
 main: com.itndev.teams.main
 api-version: 1.16
 depend: [Vault, ProtocolLib]
-softdepend: [PlaceholderAPI, Essentials]
+softdepend: [PlaceholderAPI, Essentials, WorldGuard]
 commands:
   팀:
     description: command

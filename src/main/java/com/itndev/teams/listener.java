@@ -139,6 +139,9 @@ public class listener implements Listener {
         Player p = e.getPlayer();
         //p.sendMessage("반갑습니다");
         String uuid = p.getUniqueId().toString();
+        if(!p.hasPlayedBefore()) {
+            p.performCommand("auto");
+        }
         //p.setGameMode(GameMode.ADVENTURE);
         /*if(storage.proxyonline.containsKey(uuid)) {
             String cmd = "update the player location";
@@ -227,6 +230,13 @@ public class listener implements Listener {
         return v;
     }
 
+    @EventHandler
+    public void onOpen(InventoryOpenEvent e) {
+        if(e.getInventory().getType() == InventoryType.ANVIL) {
+            e.setCancelled(true);
+        }
+    }
+
     @Deprecated
     @EventHandler(ignoreCancelled = true)
     public void onDamagePvP(EntityDamageByEntityEvent e) {
@@ -234,10 +244,18 @@ public class listener implements Listener {
         if (!e.getEntity().getLocation().getWorld().equals(main.getInstance().duelmapworld) && e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
             Player player = (Player) e.getEntity();
             Player damager = (Player) e.getDamager();
+            if(!faxcommands.PVPtoggle) {
+                utils.sendmsg(damager, "&3&l[ &f&l시스템 &3&l] &rPVP가 현재 비활성화 되있습니다");
+                e.setCancelled(true);
+                return;
+            }
             //double damage = e.getDamage();
             if(storage.teampvp.containsKey(damager.getUniqueId().toString()) && storage.teampvp.containsKey(player.getUniqueId().toString())) {
                 if (storage.teampvp.get(player.getUniqueId().toString()).equals(storage.teampvp.get(damager.getUniqueId().toString()))) {
-                    e.setCancelled(true);
+                    if(!duelcommand.isduelinghm.containsKey(player)) {
+                        e.setCancelled(true);
+                    }
+
                     //main.sendmsg((Player) e.getDamager(), "&c&l같은 팀원에게 피해를 입힐수 없습니다");
                 } else {
                     if(duelcommand.pendingdueltag.containsKey(player)) {
@@ -406,7 +424,7 @@ public class listener implements Listener {
             //e.deathMessage(message);
             ItemStack deathitem = e.getEntity().getKiller().getInventory().getItemInMainHand();
             String deathmessage = "&c&o&l[ &f&o&l킬 로그 &c&o&l] &r&c" + p.getKiller().getName() + "&r&f이가 &7" + p.getName() + "&r&f을 &r" + deathitem.getItemMeta().getDisplayName() + "&r&f(으)로 숙청했습니다";
-            e.setDeathMessage(deathmessage);
+            e.setDeathMessage(colorize(deathmessage));
         }
     }
     @EventHandler(ignoreCancelled = true)
@@ -526,24 +544,30 @@ public class listener implements Listener {
     public void onItemPickup(PlayerAttemptPickupItemEvent e) {
         if(!e.isCancelled()) {
             Player p = e.getPlayer();
-            ItemStack wep = e.getItem().getItemStack();
+            ItemStack Holding = p.getInventory().getItemInMainHand();
+            if(Holding.getType() == Material.AIR) {
+                Holding = e.getItem().getItemStack();
+            }
             ItemStack helm = p.getInventory().getHelmet();
             ItemStack ches = p.getInventory().getChestplate();
             ItemStack leg = p.getInventory().getLeggings();
             ItemStack boot = p.getInventory().getBoots();
-            itemmetacheckeffectregister(p, wep, helm, ches, leg, boot);
+            itemmetacheckeffectregister(p, Holding, helm, ches, leg, boot);
         }
     }
     @EventHandler(ignoreCancelled = true)
     public void onItemDrop(PlayerDropItemEvent e) {
         if(!e.isCancelled()) {
             Player p = e.getPlayer();
-            ItemStack wep = new ItemStack(Material.AIR);
+            ItemStack Holding = p.getInventory().getItemInMainHand();
+            if(Holding.isSimilar(e.getItemDrop().getItemStack())) {
+                Holding = new ItemStack(Material.AIR);
+            }
             ItemStack helm = p.getInventory().getHelmet();
             ItemStack ches = p.getInventory().getChestplate();
             ItemStack leg = p.getInventory().getLeggings();
             ItemStack boot = p.getInventory().getBoots();
-            itemmetacheckeffectregister(p, wep, helm, ches, leg, boot);
+            itemmetacheckeffectregister(p, Holding, helm, ches, leg, boot);
         }
     }
     /*public void EffectHandler(ItemStack olditem, Player p) {
@@ -684,6 +708,18 @@ public class listener implements Listener {
             }
             chatevent.put(p.getName(), Long.valueOf(System.currentTimeMillis()));
         }
+        if(k.startsWith("@")) {
+            String msg = k.replace("@", "");
+            if(storage.teampvp.containsKey(p.getUniqueId().toString())) {
+                e.setCancelled(true);
+                jedis.RedisChatSyncQ.put("chat" + ":=:" + p.getUniqueId().toString() + ":=:" + msg, "chat" + ":=:" + p.getUniqueId().toString() + ":=:" + msg);
+                return;
+                //utils.teamchat(e.getPlayer().getUniqueId().toString(), k);
+
+            } else {
+                main.sendmsg(p, "&c&l(!) &7소속된 팀이 없습니다");
+            }
+        }
         if(commands.teamchat.containsKey(p)) {
             if(storage.teampvp.containsKey(p.getUniqueId().toString())) {
                 e.setCancelled(true);
@@ -750,7 +786,7 @@ public class listener implements Listener {
                     for(Player finalonlinecloseplayers : closeplayer) {
                         finalonlinecloseplayers.sendMessage(Dformat);
                     }
-
+                    this.cancel();
                 }
             }.runTaskAsynchronously(main.getInstance());
             e.setCancelled(true);
@@ -776,10 +812,10 @@ public class listener implements Listener {
         }
         if(duelcommand.duelq1.containsKey(e.getPlayer())) {
             duelcommand.duelq1.remove(e.getPlayer());
-            duelcommand.duelqtake1.get(duelcommand.duelq1.get(e.getPlayer())).remove(e.getPlayer());
-            if(commands.teamchat.containsKey(e.getPlayer())) {
-                commands.teamchat.remove(e.getPlayer());
+            if(duelcommand.duelqtake1.containsKey(duelcommand.duelq1.get(e.getPlayer()))) {
+                duelcommand.duelqtake1.get(duelcommand.duelq1.get(e.getPlayer())).remove(e.getPlayer());
             }
+            commands.teamchat.remove(e.getPlayer());
         }
 
 
@@ -795,9 +831,9 @@ public class listener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
         if(duelcommand.pendingdueltag.containsKey(e.getPlayer())) {
-            if(e.getFrom().getBlockX() == e.getTo().getBlockX() && e.getFrom().getBlockY() == e.getTo().getBlockY() && e.getFrom().getBlockZ() == e.getTo().getBlockZ()) {
-                return;
-            } else {
+            Location from = e.getFrom();
+            Location to = e.getTo();
+            if(from.getZ() != to.getZ()  ||  from.getX() != to.getX()  ||  from.getY() != to.getY()) {
                 Player p = e.getPlayer();
                 Player duel = duelcommand.pendingdueltag.get(p);
                 utils.sendmsg(p, "&4&l(!) &r&f대전장으로 이동되는중에 움직여서 대전이 취소되었습니다");
@@ -805,12 +841,6 @@ public class listener implements Listener {
                 duelcommand.pendingdueltag.remove(p);
                 duelcommand.pendingdueltag.remove(duel);
             }
-
-
-        }
-        if(duelcommand.cancelmovements.containsKey(e.getPlayer().getUniqueId().toString())) {
-            //e.setCancelled(true);
-            //utils.sendmsg(e.getPlayer(), "&c&l대전이 시작해야 움직이실수 있습니다");
         }
     }
     @Deprecated
@@ -909,11 +939,27 @@ public class listener implements Listener {
         Block block = e.getClickedBlock();
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
             ItemStack kitemreal = p.getInventory().getItemInMainHand();
-            NamespacedKey namekey = new NamespacedKey(main.getInstance(), "CLICKTOUSEITEM");
-            if(kitemreal.hasItemMeta() && kitemreal.getItemMeta().getPersistentDataContainer().has(namekey, PersistentDataType.STRING)) {
-
-                CustomItemManager.ItemManager(p, kitemreal);
+            if(kitemreal.getType() != Material.AIR && kitemreal.hasItemMeta()) {
+                NamespacedKey namekey = new NamespacedKey(main.getInstance(), "CLICKTOUSEITEM");
+                if(kitemreal.getItemMeta().getDisplayName().contains("새해맞이 황금검")) {
+                    if(CustomItemManager.CheckCooldown(p, "newyeargoldensword2022", kitemreal.getItemMeta().getDisplayName(), 120)) {
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                PotionEffect po1 = new PotionEffect(PotionEffectType.REGENERATION, 400, 2);
+                                //PotionEffect po2 = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10, 2);
+                                utils.giveTeamEffect(p, 30, po1 ,true);
+                                //utils.giveTeamEffect(p, 30, po2 ,true);
+                                this.cancel();
+                            }
+                        }.runTaskAsynchronously(main.getInstance());
+                    }
+                } else if(kitemreal.getItemMeta().getPersistentDataContainer().has(namekey, PersistentDataType.STRING)) {
+                    CustomItemManager.ItemManager(p, kitemreal);
+                }
             }
+
+
         }
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK && block.getType() == Material.OAK_WALL_SIGN){
             Sign sign = (Sign) block.getState();
@@ -996,7 +1042,6 @@ public class listener implements Listener {
                                 } else {
                                     utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&f당신은 이미 해당 전직의 권한을 소유하고 있으나 어드민인 관계로 테스트를 감안하여 구매가 진행됩니다");
                                 }
-
                             }
                             if(!p.hasPermission("faxcore.chestrank")) {
                                 utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&f해당 전직 &5Healer &r&f(을)를 구매하려면 먼저 &6Chest &f랭크를 구매해야 합니다");
@@ -1010,7 +1055,6 @@ public class listener implements Listener {
                             utils.runcommandfromconsole("lp user " + p.getName() + " parent add healer");
                             utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&f성공! &5Healer &f랭크로 전직하였습니다.");
                             utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&f앞으로 /힐,/회복 (을)를 사용할 권한이 생깁니다");
-
                         } else if(sign.getLine(1).contains("Legend")) {
                             if(p.hasPermission("faxcore.legendrank")) {
                                 if (!p.hasPermission("faxcore.admin")) {
@@ -1054,15 +1098,12 @@ public class listener implements Listener {
                             utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&f성공! &3&lFax &f랭크로 전직하였습니다.");
                             utils.sendmsg(p, "&f&l[ &c&l전직 &f&l] &r&c+ 공격력 &f패시브로 &7+3 (누적됨)");
                         }
-
                     }
             }
         } else if((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)) {
-
             if(e.getAction() == Action.RIGHT_CLICK_BLOCK  && block.getType() == Material.OAK_WALL_SIGN) {
                 return;
             }
-
             ItemStack item = p.getInventory().getItemInMainHand();
             if(item.getType().equals(Material.LAPIS_LAZULI) && item.getAmount() == 64) {
                 item.setAmount(0);
@@ -1086,9 +1127,6 @@ public class listener implements Listener {
             main.sendmsg((Player) e.getWhoClicked(), "&c&l(!) &7상대방의 정보를 보고 있는 도중에는 해당 엑션을 취하실수 없습니다");
             e.setCancelled(true);
             e.getWhoClicked().closeInventory();
-
-
-
         }
     }
 

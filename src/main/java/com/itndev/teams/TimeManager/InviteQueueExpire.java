@@ -40,6 +40,7 @@ public class InviteQueueExpire {
                         }
                     }
                 }
+                this.cancel();
             }
         }.runTaskTimerAsynchronously(main.getInstance(), 20L, 20L);
 

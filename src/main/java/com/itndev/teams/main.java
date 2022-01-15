@@ -50,6 +50,12 @@ public final class main extends JavaPlugin {
 
     public static Economy econ = null;
 
+    private static String RedisSyncKey = "";
+
+    public static String getRedisSyncKey() {
+        return RedisSyncKey;
+    }
+
     //public static Essentials ess = null;
 
     public static main getInstance() {
@@ -70,6 +76,7 @@ public final class main extends JavaPlugin {
         this.config.addDefault("clientname", "client1");
         this.config.addDefault("duelworldname", "duel");
         this.config.addDefault("bannedteamname", "fuck");
+        this.config.addDefault("redissynckey", "synckey");
         this.config.addDefault("dbaddress", "db.itndev.com");
         this.config.addDefault("dbport", "6614");
         this.config.addDefault("redispassword", "54rg46ujhy7ju57wujndt35ytgryeutwefer4rt34rd34rsfg6hdf43truhgfwgr348yfgcs");
@@ -79,6 +86,7 @@ public final class main extends JavaPlugin {
         dbaddress = this.config.getString("dbaddress");
         dbport = 6614;
         password = this.config.getString("redispassword");
+        RedisSyncKey = this.config.getString("redissynckey");
         ShouldUsePermLore = Boolean.getBoolean(this.config.getString("ShouldUsePermLore"));
 
         this.config.options().copyDefaults(true);

@@ -5,10 +5,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -544,16 +541,28 @@ public class utils {
             effectlist.add(target);
         }
         for(Player p : Bukkit.getOnlinePlayers()) {
-            if(target.getLocation().distance(p.getLocation()) <= raidus) {
-                if(utils.isSameTeam(target, p) == toteams) {
-                    effectlist.add(p);
+            if(target.getWorld() == p.getWorld()) {
+                if (target.getLocation().distance(p.getLocation()) <= raidus) {
+                    if (utils.isSameTeam(target, p) == toteams) {
+                        effectlist.add(p);
+                    }
                 }
             }
         }
         if(!effectlist.isEmpty()) {
+            if(!toteams) {
+                effectlist.remove(target);
+            }
             new BukkitRunnable() {
                 public void run() {
                     for(Player k : effectlist) {
+                        for(PotionEffect po : k.getActivePotionEffects()) {
+                            if(po.getType() == effect.getType()) {
+                                if(po.getAmplifier() <= effect.getAmplifier()) {
+                                    k.removePotionEffect(effect.getType());
+                                }
+                            }
+                        }
                         k.addPotionEffect(effect);
                     }
                 }

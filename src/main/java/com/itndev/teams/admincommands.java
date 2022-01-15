@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -86,17 +87,18 @@ public class admincommands{
 
                     }
                 } else if(args[0].equalsIgnoreCase("seteffect")) {
-                    if(args.length >= 2) {
-                        NamespacedKey namekey = new NamespacedKey(main.getInstance(), "CLICKTOUSEITEM");
+                    if(args.length >= 3) {
                         ItemStack item = p.getInventory().getItemInMainHand();
                         ItemMeta itemmeta = item.getItemMeta();
-                        itemmeta.getPersistentDataContainer().set(namekey, PersistentDataType.STRING, args[1]);
+                        NamespacedKey namekey = new NamespacedKey(main.getInstance(), "REMOVEAMOUNT");
+                        itemmeta.getPersistentDataContainer().set(namekey, PersistentDataType.INTEGER, Integer.valueOf(args[1]));
+                        NamespacedKey namekey2 = new NamespacedKey(main.getInstance(), "CLICKTOUSEITEM");
+                        itemmeta.getPersistentDataContainer().set(namekey2, PersistentDataType.STRING, args[2]);
                         item.setItemMeta(itemmeta);
-                        utils.sendmsg(p, "&c&lERROR &7성공적으로 설정완료 : " + args[1]);
+                        utils.sendmsg(p, "&c&lSUCESS &7성공적으로 설정완료 : " + args[1] + " / " + args[2]);
                     } else {
-                        utils.sendmsg(p, "&c&lERROR &7사용법 : /teamadmin seteffect (String)");
+                        utils.sendmsg(p, "&c&lERROR &7사용법 : /faxskills seteffect (int) (String)");
                     }
-
                 }
 
 

@@ -9,16 +9,17 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class effectlist {
 
     //public static HashMap<String, PotionEffectType> potioneffect = new HashMap<>();
-    public static HashMap<Integer, ArrayList<PotionEffect>> effectlist222 = new HashMap<>();
+    public static ConcurrentHashMap<Integer, ArrayList<PotionEffect>> effectlist222 = new ConcurrentHashMap<>();
 
-    public static HashMap<Player, Double> AtkLore = new HashMap<>();
-    public static HashMap<Player, Double> DefLore = new HashMap<>();
+    public static ConcurrentHashMap<Player, Double> AtkLore = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Player, Double> DefLore = new ConcurrentHashMap<>();
 
-    public static HashMap<String, ArrayList<PotionEffect>> stringbasedeffectlist = new HashMap<>();
+    public static ConcurrentHashMap<String, ArrayList<PotionEffect>> stringbasedeffectlist = new ConcurrentHashMap<>();
     public static ArrayList<String> effectnames = new ArrayList<>();
     //public static HashMap<Integer, ArrayList<PotionEffectType>> effectlist333 = new HashMap<>();
 
@@ -492,7 +493,7 @@ public class effectlist {
 
 
 
-
+                this.cancel();
             }
         }.runTaskAsynchronously(main.getInstance());
     }
@@ -575,6 +576,8 @@ public class effectlist {
                         }
                     }
                 }.runTask(main.getInstance());
+
+                this.cancel();
 
             }
         }.runTaskAsynchronously(main.getInstance());

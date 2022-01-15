@@ -15,14 +15,14 @@ public class ItemFixer {
 
     @Deprecated
     public static Boolean checkifbroken(ItemStack broken) {
-        ItemStack item = broken;
+        ItemStack item = broken.clone();
         if(item != null && item.getType() != Material.AIR && item.hasItemMeta()) {
             ItemMeta tempmeta = item.getItemMeta();
             tempmeta.setDisplayName(tempmeta.getDisplayName());
             tempmeta.setLore(tempmeta.getLore());
             item.setItemMeta(tempmeta);
         }
-        if(item != null && broken.isSimilar(item)) {
+        if(item != null && item.getType() != Material.AIR && broken.isSimilar(item)) {
             return false;
         } else {
             return true;
@@ -51,8 +51,10 @@ public class ItemFixer {
                 ArrayList<Player> brokenusers = new ArrayList<>();
                 for(Player online : Bukkit.getOnlinePlayers()) {
                     for(ItemStack item : online.getInventory().getContents()) {
-                        if(checkifbroken(item)) {
-                            brokenusers.add(online);
+                        if(item != null && item.getType() != Material.AIR && checkifbroken(item.clone())) {
+                            if(!brokenusers.contains(online)) {
+                                brokenusers.add(online);
+                            }
                             break;
                         }
                     }
@@ -63,17 +65,11 @@ public class ItemFixer {
                             for(Player broken : brokenusers) {
                                 FixInventory(broken);
                             }
-
                         }
                     }.runTask(main.getInstance());
-
-
                 }
-
-
-
             }
-        }.runTaskTimerAsynchronously(main.getInstance(), 20L, 20L);
+        }.runTaskTimerAsynchronously(main.getInstance(), 20L, 60L);
     }
 
 }

@@ -157,49 +157,49 @@ public class jedis {
                             jedis1.del(main.getInstance().clientname + "-forcesync");
                         }
 
-                        commandlist1 = (HashMap<String, String>) jedis1.hgetAll("client1");
-                        commandlist2 = (HashMap<String, String>) jedis1.hgetAll("client2");
-                        commandlist3 = (HashMap<String, String>) jedis1.hgetAll("client3");
-                        commandlist4 = (HashMap<String, String>) jedis1.hgetAll("client4");
-                        commandlist5 = (HashMap<String, String>) jedis1.hgetAll("client5");
+                        commandlist1 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client1");
+                        commandlist2 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client2");
+                        commandlist3 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client3");
+                        commandlist4 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client4");
+                        commandlist5 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client5");
 
-                        chatmsg1 = (HashMap<String, String>) jedis1.hgetAll("client1chatmsg");
-                        chatmsg2 = (HashMap<String, String>) jedis1.hgetAll("client2chatmsg");
-                        chatmsg3 = (HashMap<String, String>) jedis1.hgetAll("client3chatmsg");
-                        chatmsg4 = (HashMap<String, String>) jedis1.hgetAll("client4chatmsg");
-                        chatmsg5 = (HashMap<String, String>) jedis1.hgetAll("client5chatmsg");
+                        chatmsg1 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client1chatmsg");
+                        chatmsg2 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client2chatmsg");
+                        chatmsg3 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client3chatmsg");
+                        chatmsg4 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client4chatmsg");
+                        chatmsg5 = (HashMap<String, String>) jedis1.hgetAll(main.getRedisSyncKey() + "client5chatmsg");
 
                         bungeeinfo1 = (HashMap<String, String>) jedis1.hgetAll("bungee1");
 
                         ConcurrentHashMap<String, String> redisupdateqtemp = RedisUpdateQ;
                         ConcurrentHashMap<String, String> redischatsyncqtemp = RedisChatSyncQ;
 
-                        jedis1.set("ping-" + main.getInstance().clientname, "ping");
-                        jedis1.expire("ping-" + main.getInstance().clientname, 10);
+                        jedis1.set(main.getRedisSyncKey() + "ping-" + main.getInstance().clientname, "ping");
+                        jedis1.expire(main.getRedisSyncKey() + "ping-" + main.getInstance().clientname, 10);
                         if(!redisupdateqtemp.isEmpty()) {
-                            jedis1.del(String.valueOf(main.getInstance().clientname));
-                            jedis1.hmset(String.valueOf(main.getInstance().clientname), redisupdateqtemp);
+                            jedis1.del(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname));
+                            jedis1.hmset(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname), redisupdateqtemp);
                             //jedis.expire(String.valueOf(main.getInstance().clientname) + "", 1);
-                            jedis1.expireAt(String.valueOf(main.getInstance().clientname), System.currentTimeMillis() + 200);
+                            jedis1.expireAt(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname), System.currentTimeMillis() + 200);
                             redisupdateqtemp.clear();
                             for (String key : redisupdateqtemp.keySet()) {
                                 RedisUpdateQ.remove(key);
                             }
                             //010101001001
                         } else {
-                            jedis1.del(String.valueOf(main.getInstance().clientname));
+                            jedis1.del(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname));
                         }
                         if (!redischatsyncqtemp.isEmpty()) {
-                            jedis1.del(String.valueOf(main.getInstance().clientname + "chatmsg"));
+                            jedis1.del(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname + "chatmsg"));
                             //jedis.
-                            jedis1.hmset(String.valueOf(main.getInstance().clientname + "chatmsg"), redischatsyncqtemp);
-                            jedis1.expireAt(String.valueOf(main.getInstance().clientname + "chatmsg"), System.currentTimeMillis() + 200);
+                            jedis1.hmset(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname + "chatmsg"), redischatsyncqtemp);
+                            jedis1.expireAt(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname + "chatmsg"), System.currentTimeMillis() + 200);
                             redischatsyncqtemp.clear();
                             for (String key : redischatsyncqtemp.keySet()) {
                                 RedisChatSyncQ.remove(key);
                             }
                         } else {
-                            jedis1.del(String.valueOf(main.getInstance().clientname + "chatmsg"));
+                            jedis1.del(String.valueOf(main.getRedisSyncKey() + main.getInstance().clientname + "chatmsg"));
                         }
 
 
