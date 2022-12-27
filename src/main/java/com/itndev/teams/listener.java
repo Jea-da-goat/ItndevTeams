@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.itndev.teams.ItemUtils.CustomItemManager;
 import com.itndev.teams.KnockbackManager.CustomKnockBack;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import jdk.random.Xoroshiro128PlusPlus;
 import me.leoko.advancedban.Universal;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
@@ -385,12 +386,20 @@ public class listener implements Listener {
     }
     public static void KnockbackControl(Player Damager, Player Attacked, int kbvalue) {
         Vector d = Damager.getLocation().getDirection();
-        d = d.setY(d.getY() + 0.5);
-        Attacked.setVelocity(new Vector(d.multiply(kbvaluecacu(kbvalue)).getX(), 0.3, d.multiply(kbvaluecacu(kbvalue)).getZ()));
+        int finalkbvalue = kbvalue;
+        if(kbvalue < 0) {
+            d.multiply(-1);
+            finalkbvalue = kbvalue * -1;
+        }
+
+        d = d.setY(d.getY() + 1.0);
+        Attacked.setVelocity(new Vector(d.multiply(kbvaluecacu(finalkbvalue)).getX() + finalkbvalue, 0.3, d.multiply(kbvaluecacu(finalkbvalue)).getZ() + finalkbvalue));
     }
+
     public static double kbvaluecacu(int kbvalue) {
         double finalkb;
-        if(kbvalue == 1) {
+        return 1.5 + (0.4 * kbvalue)*1.1;
+        /*if(kbvalue == 1) {
             finalkb = 0.9;
         } else if(kbvalue == 2) {
             finalkb = 1.05;
@@ -403,7 +412,7 @@ public class listener implements Listener {
         } else {
             finalkb = 2.1;
         }
-        return finalkb;
+        return finalkb; */
     }
     public static void onhitdamagelog(double damage, Player damager, Player player) {
         double health = player.getHealth();
